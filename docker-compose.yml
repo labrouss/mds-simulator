@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  switch1:
+    build: .
+    container_name: switch1
+    hostname: switch1
+    environment:
+      - SWITCH_HOSTNAME=switch1
+      - SSH_PORT=2222
+      - NXAPI_PORT=8443
+      - INSTRUCTOR_PORT=8000
+      - BUS_PORT=9000
+      # switch1's fc1/1 will connect out to switch2's fabric bus
+      - PEER_LINKS=fc1/1=switch2:9000
+    ports:
+      - "12221:2222"
+      - "18441:8443"
+      - "18001:8000"
+    volumes:
+      - ./configs/switch1:/app/configs
+    networks:
+      - fabric
+
+  switch2:
+    build: .
+    container_name: switch2
+    hostname: switch2
+    environment:
+      - SWITCH_HOSTNAME=switch2
+      - SSH_PORT=2222
+      - NXAPI_PORT=8443
+      - INSTRUCTOR_PORT=8000
+      - BUS_PORT=9000
+    ports:
+      - "12222:2222"
+      - "18442:8443"
+      - "18002:8000"
+    volumes:
+      - ./configs/switch2:/app/configs
+    networks:
+      - fabric
+
+networks:
+  fabric:
+    driver: bridge
