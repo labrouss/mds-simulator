@@ -11,7 +11,6 @@ services:
       - NXAPI_PORT=8443
       - INSTRUCTOR_PORT=8000
       - BUS_PORT=9000
-      # switch1's fc1/1 will connect out to switch2's fabric bus
       - PEER_LINKS=fc1/1=switch2:9000
     ports:
       - "12221:2222"

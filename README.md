@@ -101,3 +101,6 @@ realistic CLI syntax, state transitions, and failure modes.
 ## Instructor Dashboard
 
 A React/Vite instructor dashboard is included under `instructor_dashboard/`. It connects to each switch's instructor API over WebSocket for live port/log updates and uses the REST endpoints for fault injection. See `instructor_dashboard/README.md` for setup.
+
+
+The instructor API serves the built dashboard at `/` when `instructor_dashboard/dist` is present. Run `cd instructor_dashboard && npm run build` before starting the simulator if you want the web UI on the instructor port.

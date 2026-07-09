@@ -38,3 +38,7 @@ The dashboard talks to:
 npm run build
 npm run preview
 ```
+
+## Build output
+
+Run `npm run build` to generate `dist/`. The instructor API will serve that build at `/` when `instructor_dashboard/dist` exists.
