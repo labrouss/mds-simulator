@@ -96,3 +96,8 @@ This is an educational approximation, not a byte-accurate FC protocol
 implementation. Framing, real FLOGI/PLOGI exchanges, FSPF routing, and
 zoning enforcement are simplified for teaching clarity while preserving
 realistic CLI syntax, state transitions, and failure modes.
+
+
+## Instructor Dashboard
+
+A React/Vite instructor dashboard is included under `instructor_dashboard/`. It connects to each switch's instructor API over WebSocket for live port/log updates and uses the REST endpoints for fault injection. See `instructor_dashboard/README.md` for setup.

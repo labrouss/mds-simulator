@@ -115,6 +115,35 @@ def test_eport_no_overlap_err_disabled():
     assert d1.cfg.chassis.ports["fc1/1"].oper_state == "ERR_DISABLED"
 
 
+
+
+def test_abbreviation_unambiguous_resolves():
+    d = build("t7", 9510)
+    result = d.execute("sh int br")
+    assert "Interface" in result and "Vsan" in result
+
+
+def test_abbreviation_mode_navigation():
+    d = build("t8", 9511)
+    d.execute("conf t")
+    assert d.ctx.mode == "config"
+    d.execute("int fc1/1")
+    assert d.ctx.mode == "config-if"
+    d.execute("no shut")
+    assert d.cfg.chassis.ports["fc1/1"].admin_state == "up"
+    d.execute("ex")
+    assert d.ctx.mode == "config"
+    d.execute("end")
+    assert d.ctx.mode == "exec"
+
+
+def test_ambiguous_abbreviation_rejected():
+    d = build("t9", 9512)
+    result = d.execute("c terminal")
+    assert "Invalid" in result
+    assert d.ctx.mode == "exec"
+
+
 if __name__ == "__main__":
     test_f_port_bring_up()
     test_speed_rejects_unsupported()
@@ -122,4 +151,7 @@ if __name__ == "__main__":
     test_eport_trunk_matching_vsans()
     test_eport_trunk_partial_overlap_isolation()
     test_eport_no_overlap_err_disabled()
+    test_abbreviation_unambiguous_resolves()
+    test_abbreviation_mode_navigation()
+    test_ambiguous_abbreviation_rejected()
     print("ALL TESTS PASSED")

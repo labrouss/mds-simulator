@@ -9,6 +9,7 @@ from .output_templates import (
     show_zoneset_active, show_transceiver_detail, show_interface_trunk
 )
 from ..hardware.port_state_machine import PortStateMachine
+from . import command_tree as ct
 
 
 class Dispatcher:
@@ -27,6 +28,8 @@ class Dispatcher:
             tokens = shlex.split(line)
         except ValueError:
             return "% Invalid input"
+
+        tokens = ct.resolve_tokens(self.ctx.mode, tokens)
 
         try:
             if self.ctx.mode == "exec":
