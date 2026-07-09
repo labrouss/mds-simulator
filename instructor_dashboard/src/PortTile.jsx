@@ -12,7 +12,7 @@ const STATUS_COLORS = {
   ERR_DISABLED: "#e74c3c",
 };
 
-export default function PortTile({ name, port, onAction }) {
+export default function PortTile({ name, port, onAction, onConfigure }) {
   const color = STATUS_COLORS[port.status] || "#7f8c8d";
   const [open, setOpen] = React.useState(false);
 
@@ -38,6 +38,13 @@ export default function PortTile({ name, port, onAction }) {
           </button>
           <button style={styles.btn} onClick={() => onAction("degrade_signal", name)}>
             Degrade Signal
+          </button>
+          <div style={styles.divider} />
+          <button
+            style={{ ...styles.btn, ...styles.configureBtn }}
+            onClick={() => onConfigure(name)}
+          >
+            Configure Port...
           </button>
         </div>
       )}
@@ -79,6 +86,16 @@ const styles = {
     gap: 4,
     marginTop: 4,
     boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+  },
+  divider: {
+    height: 1,
+    background: "#333",
+    margin: "2px 0",
+  },
+  configureBtn: {
+    background: "#01696f33",
+    color: "#4f98a3",
+    fontWeight: 600,
   },
   btn: {
     background: "#2a2e37",

@@ -167,3 +167,88 @@ def get_logging():
 @app.get("/state/hostname")
 def get_hostname():
     return {"hostname": _dispatcher.cfg.hostname if _dispatcher else "unknown"}
+
+
+class PortConfigRequest(BaseModel):
+    port: str
+    mode: str | None = None            # F, E, TE, auto
+    vsan: int | None = None            # assign interface to vsan (F-port typical)
+    speed: str | None = None           # 1000..128000 or auto
+    trunk_allowed_vsan: str | None = None  # e.g. "1,10,20"
+    admin_state: str | None = None     # "up" or "down"
+
+
+def _run_config_lines(lines):
+    if _dispatcher is None:
+        return {"status": "error", "message": "dispatcher not ready"}
+    _dispatcher.execute("configure terminal")
+    outputs = []
+    for line in lines:
+        outputs.append(_dispatcher.execute(line))
+    _dispatcher.execute("exit")
+    _dispatcher.execute("exit")
+    return {"status": "ok", "output": [o for o in outputs if o]}
+
+
+@app.post("/config/port")
+def config_port(req: PortConfigRequest):
+    lines = [f"interface {req.port}"]
+    if req.mode:
+        lines.append(f"switchport mode {req.mode}")
+    if req.speed:
+        lines.append(f"switchport speed {req.speed}")
+    if req.trunk_allowed_vsan:
+        lines.append(f"switchport trunk allowed vsan {req.trunk_allowed_vsan}")
+    if req.vsan is not None:
+        lines.append(f"vsan {req.vsan}")
+    if req.admin_state == "up":
+        lines.append("no shutdown")
+    elif req.admin_state == "down":
+        lines.append("shutdown")
+    return _run_config_lines(lines)
+
+
+@app.get("/config/port/{port_name}")
+def get_port_config(port_name: str):
+    if _dispatcher is None:
+        return {}
+    p = _dispatcher.cfg.chassis.ports.get(port_name)
+    if p is None:
+        return {"error": "port not found"}
+    return {
+        "name": p.name,
+        "port_mode": getattr(p, "port_mode", None),
+        "vsan": getattr(p, "vsan", None),
+        "speed_config": getattr(p, "speed_config", None),
+        "negotiated_speed": getattr(p, "negotiated_speed", None),
+        "admin_state": getattr(p, "admin_state", None),
+        "oper_state": getattr(p, "oper_state", None),
+        "trunk_allowed_vsans": getattr(p, "trunk_allowed_vsans", None),
+    }
+
+
+@app.get("/debug/routes")
+def debug_routes():
+    routes = []
+    for r in app.routes:
+        routes.append(getattr(r, "path", str(r)))
+    return {"routes": routes, "dashboard_dir": str(_dashboard_dir()) if _dashboard_dir() else None}
+
+
+@app.get("/favicon.ico")
+def favicon():
+    d = _dashboard_dir()
+    if d is not None:
+        ico = d / "favicon.ico"
+        if ico.exists():
+            return FileResponse(str(ico))
+    return {"status": "ok"}
+
+
+@app.get("/state/full")
+def get_full_state():
+    return {
+        "hostname": _dispatcher.cfg.hostname if _dispatcher else "unknown",
+        "ports": _ports_snapshot(),
+        "logs": _dispatcher.cfg.event_log.tail(50) if _dispatcher else [],
+    }

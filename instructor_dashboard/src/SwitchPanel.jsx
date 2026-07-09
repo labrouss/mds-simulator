@@ -1,9 +1,11 @@
 import React, { useCallback } from "react";
 import { useSwitchSocket } from "./useSwitchSocket.js";
 import PortTile from "./PortTile.jsx";
+import PortSetupModal from "./PortSetupModal.jsx";
 
 export default function SwitchPanel({ label, wsUrl, apiUrl }) {
-  const { hostname, ports, logs, connected } = useSwitchSocket(wsUrl);
+  const { hostname, ports, logs, connected, transport } = useSwitchSocket(wsUrl);
+  const [configuringPort, setConfiguringPort] = React.useState(null);
 
   const onAction = useCallback(
     async (action, portName) => {
@@ -44,7 +46,7 @@ export default function SwitchPanel({ label, wsUrl, apiUrl }) {
               color: connected ? "#2ecc71" : "#e74c3c",
             }}
           >
-            {connected ? "connected" : "disconnected"}
+            {connected ? `connected (${transport})` : "disconnected"}
           </span>
         </div>
         <div style={styles.chassisActions}>
@@ -62,9 +64,25 @@ export default function SwitchPanel({ label, wsUrl, apiUrl }) {
 
       <div style={styles.grid}>
         {Object.entries(ports).map(([name, port]) => (
-          <PortTile key={name} name={name} port={port} onAction={onAction} />
+          <PortTile
+            key={name}
+            name={name}
+            port={port}
+            onAction={onAction}
+            onConfigure={setConfiguringPort}
+          />
         ))}
       </div>
+
+      {configuringPort && (
+        <PortSetupModal
+          apiUrl={apiUrl}
+          portName={configuringPort}
+          currentPort={ports[configuringPort]}
+          onClose={() => setConfiguringPort(null)}
+          onApplied={() => {}}
+        />
+      )}
 
       <div style={styles.logHeader}>Live Event Log</div>
       <div style={styles.logBox}>

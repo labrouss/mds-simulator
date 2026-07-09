@@ -1,21 +1,18 @@
 import React, { useState } from "react";
 import SwitchPanel from "./SwitchPanel.jsx";
 
-/**
- * Configure one entry per switch instance in your lab. For a local
- * single-switch run: instructor API on :8000, WebSocket at /ws.
- * For docker-compose two_switch_fabric: switch1 -> :18001, switch2 -> :18002
- * (see docker-compose.yml port mappings for INSTRUCTOR_PORT).
- */
+const pageHost = window.location.hostname;
+const pageProto = window.location.protocol === "https:" ? "wss" : "ws";
+const pageHttpProto = window.location.protocol === "https:" ? "https" : "http";
+
 const DEFAULT_SWITCHES = [
-  { label: "Switch 1", host: "localhost", port: 8000 },
-  { label: "Switch 2", host: "localhost", port: 8001 },
+  { label: "Switch 1", host: pageHost, port: 18001 },
 ];
 
 export default function App() {
   const [switches, setSwitches] = useState(DEFAULT_SWITCHES);
-  const [newHost, setNewHost] = useState("localhost");
-  const [newPort, setNewPort] = useState(8002);
+  const [newHost, setNewHost] = useState(pageHost);
+  const [newPort, setNewPort] = useState(18002);
 
   const addSwitch = () => {
     setSwitches([
@@ -51,6 +48,10 @@ export default function App() {
         </div>
       </header>
 
+      <div style={{ marginBottom: 12, color: '#9ca3af', fontSize: 12 }}>
+        Add additional switch panels by entering the host and instructor port. The dashboard defaults to one switch to avoid connection noise.
+      </div>
+
       {switches.map((sw, idx) => (
         <div key={idx} style={{ position: "relative" }}>
           <button style={styles.removeBtn} onClick={() => removeSwitch(idx)}>
@@ -58,8 +59,8 @@ export default function App() {
           </button>
           <SwitchPanel
             label={sw.label}
-            wsUrl={`ws://${sw.host}:${sw.port}/ws`}
-            apiUrl={`http://${sw.host}:${sw.port}`}
+            wsUrl={`${pageProto}://${sw.host}:${sw.port}/ws`}
+            apiUrl={`${pageHttpProto}://${sw.host}:${sw.port}`}
           />
         </div>
       ))}
